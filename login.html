@@ -1,0 +1,173 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+ <title>login</title>
+<link rel="stylesheet" href="css/login.css">
+  </head>
+  <body
+    data-need-recaptcha="false"
+    data-recaptcha-site-key=""
+  >
+ 
+    <div class="login-screen" id="loginScreen">
+   
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+      <div class="floating-element"></div>
+
+      <div class="login-form-container" id="loginFormContainer">
+        <div class="login-form">
+          
+          <h1 style="color: aliceblue;">Welcome to the system</h1>
+
+          <form method="POST" id="loginForm">
+            <input type="hidden" name="csrf_token" value="" />
+
+            <div class="mb-3">
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                name="username"
+                placeholder="username"
+                required
+                autocomplete="username"
+              />
+            </div>
+
+            <div class="mb-3">
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                placeholder="Password"
+                required
+                autocomplete="current-password"
+              />
+            </div>
+            
+
+            <div class="d-flex flex-column gap-2">
+              <button type="submit" class="login-btn" id="loginBtn">
+                <span class="btn-text">Sign in</span>
+              </button>
+            </div>
+          </form>
+          <form
+            method="POST"
+            action="/auth/demo-login"
+            class="mt-3"
+            id="demoLoginForm"
+          >
+            
+          </form>
+        </div>
+      </div>
+    </div>
+
+
+  </script>
+    <script>
+         (function () {
+        const savedTheme = localStorage.getItem('theme');
+        const theme = savedTheme || 'light';
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.id = 'dark-theme';
+          link.href = "/static/dark-theme.css";
+          document.head.appendChild(link);
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+// reCAPTCHA
+
+document.addEventListener('DOMContentLoaded', function () {
+  const body = document.body;
+  const loginForm = document.getElementById('loginForm');
+  const loginBtn = document.getElementById('loginBtn');
+  const demoForm = document.getElementById('demoLoginForm');
+  const demoBtn = document.getElementById('demoLoginBtn');
+  const loginScreen = document.getElementById('loginScreen');
+  const loginFormContainer = document.getElementById('loginFormContainer');
+  const needRecaptcha = body.dataset.needRecaptcha === 'true';
+  const recaptchaSiteKey = body.dataset.recaptchaSiteKey || '';
+
+  function submitWithAnimation(form) {
+    setTimeout(() => {
+      loginFormContainer.classList.add('slide-out');
+      setTimeout(() => {
+        loginScreen.classList.add('fade-out');
+        setTimeout(() => {
+          form.submit();
+        }, 400);
+      }, 600);
+    }, 1000);
+  }
+
+  loginForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    loginBtn.classList.add('loading');
+    loginBtn.innerHTML = '<span class="spinner"></span>Р’С…РѕРґ...';
+
+    if (
+      needRecaptcha &&
+      typeof grecaptcha !== 'undefined' &&
+      recaptchaSiteKey
+    ) {
+      try {
+        grecaptcha.ready(function () {
+          grecaptcha
+            .execute(recaptchaSiteKey, { action: 'login' })
+            .then(function (token) {
+              const input = document.getElementById('g-recaptcha-response');
+              if (input) {
+                input.value = token;
+              }
+              submitWithAnimation(loginForm);
+            })
+            .catch(function () {
+              submitWithAnimation(loginForm);
+            });
+        });
+      } catch (err) {
+        submitWithAnimation(loginForm);
+      }
+    } else {
+      submitWithAnimation(loginForm);
+    }
+  });
+
+  if (demoForm && demoBtn) {
+    demoForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      demoBtn.classList.add('loading');
+      demoBtn.innerHTML = '<span class="spinner"></span>Р”РµРјРѕ-РІС…РѕРґ...';
+      submitWithAnimation(demoForm);
+    });
+  }
+
+  setTimeout(() => {
+    document.getElementById('username').focus();
+  }, 1000);
+
+  const inputs = document.querySelectorAll('.form-control');
+  inputs.forEach((input) => {
+    input.addEventListener('focus', function () {
+      this.parentElement.style.transform = 'scale(1.02)';
+      this.parentElement.style.transition = 'transform 0.2s ease';
+    });
+
+    input.addEventListener('blur', function () {
+      this.parentElement.style.transform = 'scale(1)';
+    });
+  });
+});
+    </script>
+  </body>
+</html>
